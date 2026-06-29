@@ -1,4 +1,3 @@
-
 // Search in rotated sorted array-II
 /* Given an integer array nums, sorted in ascending order (may contain duplicate values) and a target value k. 
 Now the array is rotated at some pivot point unknown to you. Return True if k is present and otherwise, return False.
@@ -570,3 +569,140 @@ public:
     }
 };
 // TC: O(log(min(N1 + N2))) (for loop) | SC: O(1)
+
+// First and last occurrence
+/* Given an array of integers nums sorted in non-decreasing order, 
+find the starting and ending position of a given target value. 
+If the target is not found in the array, return [-1, -1].
+
+Input: nums = [5, 7, 7, 8, 8, 10], target = 8
+Output: [3, 4]
+Explanation:The target is 8, and it appears in the array at indices 3 and 4, so the output is [3,4]
+
+Input: nums = [5, 7, 7, 8, 8, 10], target = 6
+Output: [-1, -1]
+Expalantion: The target is 6, which is not present in the array. Therefore, the output is [-1, -1].*/
+
+// Brute Force:
+class Solution{
+public:
+    vector<int> searchRange(vector<int> &arr, int target) {
+        int first = -1, last = -1;
+        int n = arr.size();
+        for(int i=0; i<n; i++){
+            if(arr[i] == target){
+                if(first == -1) first = i;
+                last = i;
+            }
+        }
+        return {first, last};
+    }
+};
+// TC: O(N) | SC: O(1)
+
+// Better Approach: Uisng lower Bounds & upper bounds with considering edge cases
+class Solution{
+private:
+    int lowerBound(vector<int> &arr, int x){
+        int n = arr.size();
+        int low = 0;
+        int high = n-1;
+        int ans = n;
+        while(low <= high){
+            int mid = (low + high)/2;
+            if(arr[mid] >= x){
+                ans = mid;
+                high = mid - 1;
+            }
+            else{
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    int upperBound(vector<int> &arr, int x){
+        int n = arr.size();
+        int low = 0;
+        int high = n-1;
+        int ans = n;
+        while(low <= high){
+            int mid = (low + high)/2;
+            if(arr[mid] > x){
+                ans = mid;
+                high = mid - 1;
+            }
+            else{
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+public:
+    vector<int> searchRange(vector<int> &arr, int target) {
+        // Function call to find the first occurrence (lower bound)
+        int firstOcc = lowerBound(arr, target);  
+        // Check if the target is present in the array or not
+        if(firstOcc == arr.size() || arr[firstOcc] != target) return {-1, -1}; 
+        // Function call to find the last occurrence (upper bound)
+        int lastOcc = upperBound(arr, target) - 1;  
+        return {firstOcc, lastOcc};  
+    }
+};
+// TC: O(2 * log(N)) | SC: O(1)
+
+
+// Optimal Approach: Using Binary Search
+class Solution{
+private:
+    int findFirst(vector<int> arr, int target){
+        int n = arr.size();
+        int low = 0;
+        int high = n-1;
+        int first = -1;
+        while(low <= high){
+            int mid = (low + high)/2;
+            if(arr[mid] == target){
+                first = mid;
+                high = mid - 1;
+            }
+            else if(arr[mid] < target){
+                low = mid + 1;
+            }
+            else{  // arr[mid] > target
+                high = mid - 1;
+            }
+        }
+        return first;
+    }
+
+    int findLast(vector<int> arr, int target){
+        int n = arr.size();
+        int low = 0;
+        int high = n-1;
+        int last = -1;
+        while(low <= high){
+            int mid = (low + high)/2;
+            if(arr[mid] == target){
+                last = mid;
+                low = mid + 1;
+            }
+            else if(arr[mid] < target){
+                low = mid + 1;
+            }
+            else{ // arr[mid] > target
+                high = mid - 1;
+            }
+        }
+        return last;
+    }
+public:
+    vector<int> searchRange(vector<int> &arr, int target) {
+        int first = -1, last = -1;
+        first = findFirst(arr, target);
+        last = findLast(arr, target);
+        return {first, last};
+    }
+};
+// TC: O(2 * log(N)) | SC: O(1)
